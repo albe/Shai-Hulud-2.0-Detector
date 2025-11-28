@@ -215,10 +215,20 @@ const affectedPackageNames = new Set(
  * Fast membership check for whether a package name appears in the compromised
  * master package list.
  * @param packageName The dependency name to check.
+ * @param version Optional specific version to check (defaults to '*').
  * @returns true if the package is flagged as affected.
  */
-export function isAffected(packageName: string): boolean {
-	return affectedPackageNames.has(packageName);
+export function isAffected(packageName: string, version: string = '*'): boolean {
+	if (affectedPackageNames.has(packageName)) {
+		const pkg = masterPackages.packages.find((p) => p.name === packageName);
+		if (!pkg) return false;
+
+		if (pkg.affectedVersions.includes('*')) {
+			return true;
+		}
+		return pkg.affectedVersions.includes(version);
+	}
+	return false;
 }
 
 /**
@@ -244,6 +254,7 @@ export function parsePackageJson(filePath: string): PackageJson | null {
 		const content = fs.readFileSync(filePath, 'utf8');
 		return JSON.parse(content) as PackageJson;
 	} catch {
+		console.error(`Failed to parse package.json at ${filePath}`);
 		return null;
 	}
 }
@@ -332,7 +343,7 @@ export function scanPackageJson(
 	};
 
 	for (const [name, version] of Object.entries(allDeps)) {
-		if (isAffected(name)) {
+		if (isAffected(name, version)) {
 			results.push({
 				package: name,
 				version: version || 'unknown',
@@ -365,7 +376,7 @@ export function scanPackageLock(filePath: string): ScanResult[] {
 			const match = pkgPath.match(/node_modules\/(.+)$/);
 			if (match) {
 				const name = match[1];
-				if (isAffected(name)) {
+				if (isAffected(name, entry.version)) {
 					results.push({
 						package: name,
 						version: entry.version || 'unknown',
@@ -382,7 +393,7 @@ export function scanPackageLock(filePath: string): ScanResult[] {
 	if (lock.dependencies) {
 		const scanDependencies = (deps: Record<string, any>, isDirect: boolean) => {
 			for (const [name, entry] of Object.entries(deps)) {
-				if (isAffected(name)) {
+				if (isAffected(name, entry.version)) {
 					results.push({
 						package: name,
 						version: entry.version || 'unknown',
@@ -416,7 +427,7 @@ export function scanYarnLock(filePath: string): ScanResult[] {
 	if (!packages) return results;
 
 	for (const [name, version] of packages.entries()) {
-		if (isAffected(name)) {
+		if (isAffected(name, version)) {
 			results.push({
 				package: name,
 				version,
@@ -1002,7 +1013,7 @@ export function checkAffectedNamespaces(filePath: string): SecurityFinding[] {
 
 	for (const [name, version] of Object.entries(allDeps)) {
 		// Skip if already in affected packages list
-		if (isAffected(name)) continue;
+		if (isAffected(name, version)) continue;
 
 		// Check if from affected namespace
 		for (const namespace of AFFECTED_NAMESPACES) {
