@@ -1275,7 +1275,7 @@ A huge thank you to all the community members who have contributed to this proje
 | <img src=https://github.com/luca-cond.png width=32 height=32 alt=@luca-cond> | [@luca-cond](https://github.com/luca-cond) | Discussions |
 | <img src=https://github.com/lucascco.png width=32 height=32 alt=@lucascco> | [@lucascco](https://github.com/lucascco) | Pull requests |
 | <img src=https://github.com/maxie7.png width=32 height=32 alt=@maxie7> | [@maxie7](https://github.com/maxie7) | Code contributions, Discussions, Pull requests |
-| <img src=https://github.com/noahhsec.png width=32 height=32 alt=@noahhsec> | [@noahhsec](https://github.com/noahhsec) | Pull requests |
+| <img src=https://github.com/noahhsec.png width=32 height=32 alt=@noahhsec> | [@noahhsec](https://github.com/noahhsec) | Code contributions, Pull requests |
 | <img src=https://github.com/sampov2.png width=32 height=32 alt=@sampov2> | [@sampov2](https://github.com/sampov2) | Discussions |
 | <img src=https://github.com/seezee.png width=32 height=32 alt=@seezee> | [@seezee](https://github.com/seezee) | Issue reports |
 | <img src=https://github.com/topsinfonimesh.png width=32 height=32 alt=@topsinfonimesh> | [@topsinfonimesh](https://github.com/topsinfonimesh) | Discussions |
