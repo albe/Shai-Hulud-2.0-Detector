@@ -16,7 +16,6 @@ import type {
 	ScanSummary,
 	SecurityFinding,
 } from './types';
-import {createHash} from "node:crypto";
 
 const DEFAULT_MAX_DEPTH = 10;
 
@@ -859,9 +858,7 @@ export function checkSuspiciousScripts(filePath: string): SecurityFinding[] {
 	for (const [scriptName, scriptContent] of Object.entries(pkg.scripts)) {
 		if (!scriptContent) continue;
 
-		const scriptSha256 = createHash('sha256')
-			.update(scriptContent)
-			.digest('hex');
+		const scriptSha256 = SHA256(scriptContent);
 
 		// Check all suspicious patterns
 		// NOTE: Patterns are designed to avoid false positives (e.g., --eval vs shell eval)
@@ -948,9 +945,7 @@ export function checkTrufflehogActivity(directory: string): SecurityFinding[] {
 						try {
 							const content = fs.readFileSync(fullPath, 'utf8');
 
-							const contentSha256 = createHash('sha256')
-								.update(content)
-								.digest('hex');
+							const contentSha256 = SHA256(content);
 
 							// Skip if this is the detector's own source code
 							if (isDetectorSourceCode(content)) {
@@ -1122,9 +1117,7 @@ export function checkSecretsExfiltration(directory: string): SecurityFinding[] {
 					) {
 						try {
 							const content = fs.readFileSync(fullPath, 'utf8');
-							const contentSha256 = createHash('sha256')
-								.update(content)
-								.digest('hex');
+							const contentSha256 = SHA256(content);
 							// Check if it looks like base64 encoded data
 							if (/^[A-Za-z0-9+/=]{100,}$/m.test(content)) {
 								findings.push({
@@ -1212,9 +1205,7 @@ export function checkMaliciousRunners(directory: string): SecurityFinding[] {
 						continue;
 					}
 
-					const contentSha256 = createHash('sha256')
-						.update(content)
-						.digest('hex');
+					const contentSha256 = SHA256(content);
 
 					// Check for malicious runner patterns
 					for (const { pattern, description } of MALICIOUS_RUNNER_PATTERNS) {
@@ -1296,9 +1287,7 @@ export function checkShaiHuludRepos(directory: string): SecurityFinding[] {
 			const contentWithoutLegitRefs =
 				stripLegitimateSecurityReferences(content);
 
-			const contentSha256 = createHash('sha256')
-				.update(content)
-				.digest('hex');
+			const contentSha256 = SHA256(content);
 			for (const { pattern, description } of SHAI_HULUD_REPO_PATTERNS) {
 				if (pattern.test(contentWithoutLegitRefs)) {
 					findings.push({
@@ -1325,9 +1314,7 @@ export function checkShaiHuludRepos(directory: string): SecurityFinding[] {
 			const contentWithoutLegitRefs =
 				stripLegitimateSecurityReferences(content);
 
-			const contentSha256 = createHash('sha256')
-				.update(content)
-				.digest('hex');
+			const contentSha256 = SHA256(content);
 			for (const { pattern, description } of SHAI_HULUD_REPO_PATTERNS) {
 				if (pattern.test(contentWithoutLegitRefs)) {
 					findings.push({
@@ -1429,6 +1416,12 @@ export function checkSuspiciousBranches(directory: string): SecurityFinding[] {
 	return findings;
 }
 
+function SHA256(data: crypto.BinaryLike): string {
+	return crypto.createHash('sha256')
+		.update(data)
+		.digest('hex');
+}
+
 /**
  * Calculate SHA256 hash of a file for malware signature matching.
  * @param filePath Path to the file.
@@ -1437,7 +1430,7 @@ export function checkSuspiciousBranches(directory: string): SecurityFinding[] {
 function calculateSHA256(filePath: string): string | null {
 	try {
 		const content = fs.readFileSync(filePath);
-		return crypto.createHash('sha256').update(content).digest('hex');
+		return SHA256(content);
 	} catch {
 		return null;
 	}
